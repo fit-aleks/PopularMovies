@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="details_fragment_title">Movie Details</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="sync_account_type" translatable="false">popularmovies.fitaleks.com</string>
+    <string name="content_authority" translatable="false">com.fitaleks.popularmovies</string>
+
+</resources>

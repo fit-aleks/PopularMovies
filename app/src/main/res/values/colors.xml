@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="semitransparent_black">#55000000</color>
+
+    <color name="primary_green">#43A047</color>
+    <color name="primary_green_dark">#388E3C</color>
+
+</resources>
