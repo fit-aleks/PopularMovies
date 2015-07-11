@@ -6,4 +6,6 @@
 
     <dimen name="title_horizontal_padding">10dp</dimen>
     <dimen name="title_vertical_padding">15dp</dimen>
+
+    <dimen name="details_title_elevation">2dp</dimen>
 </resources>
