@@ -18,7 +18,7 @@ public class DetailsActivity extends AppCompatActivity {
             long movieId = getIntent().getLongExtra(KEY_MOVIE_ID, 0);
             DetailsFragment detailFragment = DetailsFragment.newInstance(movieId);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.details_activity, detailFragment)
+                    .replace(R.id.movie_details_container, detailFragment)
                     .commit();
         }
     }

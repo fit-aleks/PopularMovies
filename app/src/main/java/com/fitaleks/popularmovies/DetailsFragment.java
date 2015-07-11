@@ -119,8 +119,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         String year = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
         this.year.setText(year);
 
-        double averageRating = data.getInt(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
-        this.rating.setText(Double.toString(averageRating));
+        double averageRating = data.getDouble(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
+        this.rating.setText(String.format(getString(R.string.details_rating), averageRating));
 
         String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
         this.overview.setText(overview);

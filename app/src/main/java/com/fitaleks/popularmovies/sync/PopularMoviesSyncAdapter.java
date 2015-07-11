@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.fitaleks.popularmovies.R;
+import com.fitaleks.popularmovies.Utility;
 import com.fitaleks.popularmovies.data.MoviesContract;
 
 import org.json.JSONArray;
@@ -46,11 +47,8 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final long THREE_HOURS_IN_MILLIS = 1000 * 60 * 60 * 3;
     private static final int MOVIES_NOTIFICATION_ID = 7006; // Just because 7*6 is 42 :)
 
-    private final Context mContext;
-
     public PopularMoviesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-        mContext = context;
     }
 
     @Override
@@ -77,6 +75,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 double averageVote = cinema.getDouble("vote_average");
                 boolean isAdult = cinema.getBoolean("adult");
                 String posterPath = cinema.getString("poster_path");
+                double popularity = cinema.getDouble("popularity");
 
                 ContentValues movieValues = new ContentValues();
 
@@ -88,6 +87,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, averageVote);
                 movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_ADULT, isAdult);
                 movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, posterPath);
+                movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, popularity);
 
                 cVVector.add(movieValues);
             }
@@ -241,6 +241,5 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         ContentResolver.setSyncAutomatically(newAccount, context.getString(R.string.content_authority), true);
 
         syncImmediately(context);
-
     }
 }

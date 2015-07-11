@@ -81,7 +81,15 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        final String sortOrder = MoviesContract.MovieEntry.COLUMN_RELEASE_DATE+ " DESC";
+        final String sortOrder;
+
+        String sortCriteria = Utility.getPrefferedMoviesList(getActivity());
+        if (sortCriteria.equals(getString(R.string.pref_list_popular))) {
+            sortOrder = MoviesContract.MovieEntry.COLUMN_POPULARITY + " DESC";
+        } else {
+            sortOrder = MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE + " DESC";
+        }
+
         return new CursorLoader(getActivity(),
                 MoviesContract.MovieEntry.CONTENT_URI,
                 MOVIES_COLUMNS,

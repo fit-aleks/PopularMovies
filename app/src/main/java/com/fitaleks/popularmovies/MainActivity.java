@@ -11,10 +11,23 @@ import com.fitaleks.popularmovies.sync.PopularMoviesSyncAdapter;
 
 public class MainActivity extends AppCompatActivity implements MoviesFragment.MovieSelectedCallback {
 
+    private boolean mTwoPane;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.movie_details_container) != null) {
+            this.mTwoPane = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.movie_details_container, new DetailsFragment())
+                        .commit();
+            }
+        } else {
+            this.mTwoPane = false;
+        }
 
         PopularMoviesSyncAdapter.initializeSyncAdapter(this);
     }
@@ -35,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Mo
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -43,7 +57,13 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Mo
 
     @Override
     public void onItemSelected(long id) {
-        Intent intent = new Intent(this, DetailsActivity.class).putExtra(DetailsActivity.KEY_MOVIE_ID, id);
-        startActivity(intent);
+        if (mTwoPane) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_details_container, DetailsFragment.newInstance(id))
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailsActivity.class).putExtra(DetailsActivity.KEY_MOVIE_ID, id);
+            startActivity(intent);
+        }
     }
 }

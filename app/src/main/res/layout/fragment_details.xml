@@ -15,7 +15,10 @@
             android:layout_height="wrap_content"
             android:paddingTop="@dimen/title_vertical_padding"
             android:paddingBottom="@dimen/title_vertical_padding"
+            android:paddingLeft="@dimen/title_horizontal_padding"
             android:background="@color/primary_green"
+            android:textColor="@android:color/white"
+            android:textAppearance="?android:textAppearanceLarge"
             android:elevation="2dp"/>
 
         <LinearLayout
@@ -35,25 +38,30 @@
                     android:id="@+id/details_movie_poster"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_weight="2">
+                    android:layout_marginLeft="@dimen/details_vertical_small_margin"
+                    android:layout_weight="1">
                     <TextView
                         android:id="@+id/details_movie_year"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:textAppearanceMedium"/>
                     <TextView
                         android:id="@+id/details_movie_duration"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:textAppearanceMedium"/>
                     <TextView
                         android:id="@+id/details_movie_rating"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:textAppearanceMedium"/>
 
                 </LinearLayout>
 
@@ -62,7 +70,10 @@
             <TextView
                 android:id="@+id/details_movie_overview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/details_vertical_small_margin"
+                android:layout_marginBottom="@dimen/details_vertical_small_margin"
+                android:textAppearance="?android:textAppearanceMedium"/>
 
         </LinearLayout>
 
