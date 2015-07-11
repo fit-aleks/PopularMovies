@@ -9,7 +9,7 @@
     tools:context="com.fitaleks.popularmovies.MainActivity">
 
     <fragment
-        android:id="@+id/fragment_shots"
+        android:id="@+id/fragment"
         android:name="com.fitaleks.popularmovies.MoviesFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
