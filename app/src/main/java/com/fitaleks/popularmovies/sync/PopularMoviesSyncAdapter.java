@@ -58,6 +58,9 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 .build();
 
         final String userJsonString = sendResponse(builtUri.toString());
+        if (userJsonString == null) {
+            return;
+        }
 
         try {
             final JSONObject userJson = new JSONObject(userJsonString);
