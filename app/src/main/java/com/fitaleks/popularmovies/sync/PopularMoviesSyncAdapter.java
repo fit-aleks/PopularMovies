@@ -17,7 +17,11 @@ import android.util.Log;
 
 import com.fitaleks.popularmovies.R;
 import com.fitaleks.popularmovies.Utility;
+import com.fitaleks.popularmovies.data.Movie;
 import com.fitaleks.popularmovies.data.MoviesContract;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +33,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
+
+import retrofit.RestAdapter;
+import retrofit.converter.GsonConverter;
 
 /**
  * Created by alexanderkulikovskiy on 10.07.15.
@@ -47,119 +56,52 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final long THREE_HOURS_IN_MILLIS = 1000 * 60 * 60 * 3;
     private static final int MOVIES_NOTIFICATION_ID = 7006; // Just because 7*6 is 42 :)
 
+    private PopularMoviesNetworkService popularMoviesNetworkService;
+
     public PopularMoviesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
+
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapterFactory(new Movie.MovieTypeAdapterFactory())
+                .create();
+
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint("http://api.themoviedb.org/3")
+                .setConverter(new GsonConverter(gson))
+                .build();
+
+        popularMoviesNetworkService = restAdapter.create(PopularMoviesNetworkService.class);
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        final Uri builtUri = Uri.parse(MOVIEDB_URL).buildUpon()
-                .appendQueryParameter("api_key", MOVIEDB_API_KEY)
-                .build();
+        final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+        Log.d(LOG_TAG, "allMovies = " + allMovies.toString());
+        Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
+        for (int i = 0; i < allMovies.size(); ++i) {
+            Movie movie = allMovies.get(i);
 
-        final String userJsonString = sendResponse(builtUri.toString());
-        if (userJsonString == null) {
-            return;
+            ContentValues movieValues = new ContentValues();
+
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, movie.movieDbID);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, movie.originalLang);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, movie.title);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_ADULT, movie.isAdult);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
+
+            cVVector.add(movieValues);
+        }
+        if ( cVVector.size() > 0 ) {
+            ContentValues[] cvArray = new ContentValues[cVVector.size()];
+            cVVector.toArray(cvArray);
+            getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
         }
 
-        try {
-            final JSONObject userJson = new JSONObject(userJsonString);
-            final JSONArray cinemasArray = userJson.getJSONArray("results");
-
-            Vector<ContentValues> cVVector = new Vector<>(cinemasArray.length());
-            for (int i = 0; i < cinemasArray.length(); ++i) {
-                JSONObject cinema = cinemasArray.getJSONObject(i);
-
-                long movieDbId = cinema.getLong("id");
-                String origLanguage = cinema.getString("original_language");
-                String origOverview = cinema.getString("overview");
-                String releaseDate = cinema.getString("release_date");
-                String title = cinema.getString("title");
-                double averageVote = cinema.getDouble("vote_average");
-                boolean isAdult = cinema.getBoolean("adult");
-                String posterPath = cinema.getString("poster_path");
-                double popularity = cinema.getDouble("popularity");
-
-                ContentValues movieValues = new ContentValues();
-
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, movieDbId);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, origLanguage);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, origOverview);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, releaseDate);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, title);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, averageVote);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_ADULT, isAdult);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, posterPath);
-                movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, popularity);
-
-                cVVector.add(movieValues);
-            }
-            if ( cVVector.size() > 0 ) {
-                ContentValues[] cvArray = new ContentValues[cVVector.size()];
-                cVVector.toArray(cvArray);
-                getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
-            }
-
-        } catch (JSONException ex) {
-            Log.e(LOG_TAG, "Error parsing json", ex);
-        }
-    }
-
-    private String sendResponse(@NonNull final String urlString) {
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-
-        // Will contain the raw JSON response as a string.
-        String jsonResponse = null;
-        try {
-            URL url = new URL(urlString);
-            Log.v(LOG_TAG, "Built URI " + urlString);
-
-            urlConnection = (HttpURLConnection)url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                return null;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                return null;
-            }
-            jsonResponse = buffer.toString();
-
-            Log.v(LOG_TAG, "Response string: " + jsonResponse);
-        } catch (IOException ex) {
-            Log.e(LOG_TAG, "Error", ex);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try{
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
-                }
-            }
-        }
-        return jsonResponse;
     }
 
     public static void initializeSyncAdapter(final Context context) {

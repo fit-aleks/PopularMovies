@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fitaleks.popularmovies.data.MoviesContract;
@@ -42,6 +43,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private TextView duration;
     private TextView rating;
     private TextView overview;
+    private LinearLayout detailsMovieContainer;
 
 
     public static DetailsFragment newInstance(long movieId) {
@@ -69,6 +71,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         this.duration = (TextView) rootView.findViewById(R.id.details_movie_duration);
         this.rating = (TextView) rootView.findViewById(R.id.details_movie_rating);
         this.overview = (TextView) rootView.findViewById(R.id.details_movie_overview);
+        this.detailsMovieContainer = (LinearLayout) rootView.findViewById(R.id.details_movie_container);
 
         return rootView;
     }

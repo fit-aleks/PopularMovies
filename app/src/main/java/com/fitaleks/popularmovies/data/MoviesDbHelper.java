@@ -5,12 +5,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.fitaleks.popularmovies.data.MoviesContract.MovieEntry;
+import static com.fitaleks.popularmovies.data.MoviesContract.TrailerEntry;
 
 /**
  * Created by alexanderkulikovskiy on 07.06.15.
  */
 public class MoviesDbHelper extends SQLiteOpenHelper {
-    private final static int DATABASE_VERSION = 1;
+    private final static int DATABASE_VERSION = 2;
     public final static String DATABASE_NAME = "popularmovies.db";
 
     public MoviesDbHelper(Context context) {
@@ -24,20 +25,34 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_MOVIEDB_ID + " INTEGER NOT NULL ," +
                 MovieEntry.COLUMN_IS_ADULT+ " INTEGER NOT NULL ," +
                 MovieEntry.COLUMN_ORIGINAL_LANGUAGE + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
+                MovieEntry.COLUMN_OVERVIEW + " TEXT DEFAULT '', " +
                 MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
                 MovieEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_POPULARITY + " REAL NOT NULL, "
-                + " UNIQUE (" + MovieEntry.COLUMN_MOVIEDB_ID + ") ON CONFLICT REPLACE);";
+                MovieEntry.COLUMN_POPULARITY + " REAL NOT NULL, " +
+                " UNIQUE (" + MovieEntry.COLUMN_MOVIEDB_ID + ") ON CONFLICT REPLACE);";
+
+        final String SQL_CREATE_TRAILERS_TABLE = "CREATE TABLE " + TrailerEntry.TABLE_NAME + " (" +
+                TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                TrailerEntry.COLUMN_TRAILER_ID + " STRING NOT NULL ," +
+                TrailerEntry.COLUMN_ISO_639 + " STRING NOT NULL ," +
+                TrailerEntry.COLUMN_KEY + " STRING NOT NULL ," +
+                TrailerEntry.COLUMN_NAME + " STRING NOT NULL ," +
+                TrailerEntry.COLUMN_SITE + " STRING NOT NULL ," +
+                TrailerEntry.COLUMN_SIZE + " STRING NOT NULL ," +
+                TrailerEntry.COLUMN_TYPE + " STRING NOT NULL ," +
+                " UNIQUE (" + TrailerEntry.COLUMN_TRAILER_ID + ") ON CONFLICT REPLACE);";
+
 
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIES_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_TRAILERS_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TrailerEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

@@ -19,6 +19,7 @@ public class MoviesContract {
 
     // Possible paths
     public static final String PATH_MOVIES = "movies";
+    public static final String PATH_TRAILERS = "trailers";
 
     /* Class that defines the table contents of the movie table */
     public static final class MovieEntry implements BaseColumns {
@@ -62,6 +63,31 @@ public class MoviesContract {
 
 
         public static Uri buildMoviesUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+    }
+
+    public static final class TrailerEntry implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRAILERS).build();
+        public static final String CONTENT_TYPE =
+                "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/" + PATH_TRAILERS;
+
+        public static final String CONTENT_ITEM_TYPE =
+                "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/" + PATH_TRAILERS;
+
+        public static final String TABLE_NAME = "trailers";
+
+        // ID in terms of themoviedb.com
+        public static final String COLUMN_TRAILER_ID = "id";
+        public static final String COLUMN_ISO_639 = "iso_639";
+        public static final String COLUMN_KEY = "key";
+        public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_SITE = "site";
+        public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_SIZE = "size";
+
+        public static Uri buildTrailersUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
