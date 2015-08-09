@@ -86,9 +86,14 @@ public class MoviesContract {
         public static final String COLUMN_SITE = "site";
         public static final String COLUMN_TYPE = "type";
         public static final String COLUMN_SIZE = "size";
+        public static final String COLUMN_MOVIE_ID = "movie_id";
 
         public static Uri buildTrailersUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static String getMovieIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
         }
 
     }

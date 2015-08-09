@@ -50,6 +50,9 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.Mo
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        } else if (id == R.id.action_refresh) {
+            PopularMoviesSyncAdapter.syncImmediately(this);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

@@ -13,23 +13,20 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 
 /**
- * Created by alexanderkulikovskiy on 07.08.15.
+ * Created by alexanderkulikovskiy on 09.08.15.
  */
-public class Movie {
+public class Trailer {
     @SerializedName("id")
-    public long movieDbID;
-    @SerializedName("adult")
-    public boolean isAdult;
-    @SerializedName("original_language")
-    public String originalLang;
-    public String overview;
-    public String releaseDate;
-    public String title;
-    public double voteAverage;
-    public String posterPath;
-    public double popularity;
+    public String trailerId;
+    @SerializedName("iso_639_1")
+    public String iso639;
+    public String key;
+    public String name;
+    public String site;
+    public int size;
+    public String type;
 
-    public static class MovieTypeAdapterFactory implements TypeAdapterFactory {
+    public static class TrailerTypeAdapterFactory implements TypeAdapterFactory {
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
             final TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);

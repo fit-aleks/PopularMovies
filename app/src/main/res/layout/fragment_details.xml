@@ -69,6 +69,18 @@
                 android:layout_marginBottom="@dimen/details_vertical_small_margin"
                 style="@style/SecondaryTextView"/>
 
+            <TextView
+                android:id="@+id/details_trailers_title"
+                android:text="@string/details_trailers_title"
+                style="@style/SecondaryTextView"
+                android:textStyle="bold"/>
+
+            <LinearLayout
+                android:id="@+id/details_trailers_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+
         </LinearLayout>
 
     </LinearLayout>

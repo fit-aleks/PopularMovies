@@ -1,5 +1,7 @@
 package com.fitaleks.popularmovies;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,7 +26,8 @@ import com.squareup.picasso.Picasso;
  */
 public class DetailsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private final static String LOG_TAG = DetailsFragment.class.getSimpleName();
-    private static final int DETAILS_LOADER = 0;
+    private static final int DETAILS_MOVIE_LOADER = 0;
+    private static final int DETAILS_TRAILERS_LOADER = 1;
 
     private long mMovieId;
 
@@ -37,12 +40,22 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             MoviesContract.MovieEntry.COLUMN_OVERVIEW
     };
 
+    private static final String[] TRAILERS_COLUMNS = {
+            MoviesContract.TrailerEntry.TABLE_NAME + "." + MoviesContract.TrailerEntry._ID,
+            MoviesContract.TrailerEntry.COLUMN_MOVIE_ID,
+            MoviesContract.TrailerEntry.COLUMN_SITE,
+            MoviesContract.TrailerEntry.COLUMN_TYPE,
+            MoviesContract.TrailerEntry.COLUMN_KEY,
+            MoviesContract.TrailerEntry.COLUMN_NAME
+    };
+
     private ImageView poster;
     private TextView title;
     private TextView year;
     private TextView duration;
     private TextView rating;
     private TextView overview;
+    private TextView trailersTitle;
     private LinearLayout detailsMovieContainer;
 
 
@@ -71,7 +84,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         this.duration = (TextView) rootView.findViewById(R.id.details_movie_duration);
         this.rating = (TextView) rootView.findViewById(R.id.details_movie_rating);
         this.overview = (TextView) rootView.findViewById(R.id.details_movie_overview);
-        this.detailsMovieContainer = (LinearLayout) rootView.findViewById(R.id.details_movie_container);
+        this.detailsMovieContainer = (LinearLayout) rootView.findViewById(R.id.details_trailers_container);
+        this.trailersTitle = (TextView) rootView.findViewById(R.id.details_trailers_title);
 
         return rootView;
     }
@@ -82,7 +96,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey(DetailsActivity.KEY_MOVIE_ID)
                 && mMovieId != 0) {
-            getLoaderManager().restartLoader(DETAILS_LOADER, null, this);
+            getLoaderManager().restartLoader(DETAILS_MOVIE_LOADER, null, this);
+            getLoaderManager().restartLoader(DETAILS_TRAILERS_LOADER, null, this);
         }
     }
 
@@ -91,42 +106,92 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         super.onActivityCreated(savedInstanceState);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            getLoaderManager().initLoader(DETAILS_LOADER, null, this);
+            getLoaderManager().initLoader(DETAILS_MOVIE_LOADER, null, this);
+            getLoaderManager().initLoader(DETAILS_TRAILERS_LOADER, null, this);
         }
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri movieById = MoviesContract.MovieEntry.buildMoviesUri(this.mMovieId);
-        return new CursorLoader(getActivity(),
-                movieById,
-                DETAILS_COLUMNS,
-                null,
-                null,
-                null);
+        if (id == DETAILS_MOVIE_LOADER) {
+            Uri movieById = MoviesContract.MovieEntry.buildMoviesUri(this.mMovieId);
+            return new CursorLoader(getActivity(),
+                    movieById,
+                    DETAILS_COLUMNS,
+                    null,
+                    null,
+                    null);
+        } else if (id == DETAILS_TRAILERS_LOADER) {
+            Uri movieById = MoviesContract.TrailerEntry.buildTrailersUri(this.mMovieId);
+            return new CursorLoader(getActivity(),
+                    movieById,
+                    TRAILERS_COLUMNS,
+                    null,
+                    null,
+                    null);
+        }
+        throw new UnsupportedOperationException("Unknown id: " + id);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(LOG_TAG, "onLoadFinished");
         if (data == null || !data.moveToFirst()) {
+            if (loader.getId() == DETAILS_TRAILERS_LOADER) {
+                this.trailersTitle.setVisibility(View.GONE);
+            }
             return;
         }
+        if (loader.getId() == DETAILS_MOVIE_LOADER) {
+            String imgUrl = "http://image.tmdb.org/t/p/w185"  + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
+            Picasso.with(getActivity()).load(imgUrl).into(this.poster);
 
-        String imgUrl = "http://image.tmdb.org/t/p/w185"  + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
-        Picasso.with(getActivity()).load(imgUrl).into(this.poster);
+            String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
+            this.title.setText(title);
 
-        String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
-        this.title.setText(title);
+            String year = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
+            this.year.setText(year);
 
-        String year = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
-        this.year.setText(year);
+            double averageRating = data.getDouble(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
+            this.rating.setText(String.format(getString(R.string.details_rating), averageRating));
 
-        double averageRating = data.getDouble(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
-        this.rating.setText(String.format(getString(R.string.details_rating), averageRating));
+            String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
+            this.overview.setText(overview);
+        } else if (loader.getId() == DETAILS_TRAILERS_LOADER) {
+            this.trailersTitle.setVisibility(View.VISIBLE);
+            detailsMovieContainer.removeAllViews();
+            do {
+                final String name = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_NAME));
+                final String key = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_KEY));
+                Log.d(LOG_TAG, "site = " + name + " key = " + key);
 
-        String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
-        this.overview.setText(overview);
+                TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
+                textView.setPadding(0, 16, 0, 16);
+                textView.setText(name);
+                textView.setClickable(true);
+                textView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + key));
+                            startActivity(intent);
+                        } catch (ActivityNotFoundException ex) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW,
+                                    Uri.parse("http://www.youtube.com/watch?v=" + key));
+                            startActivity(intent);
+                        }
+                    }
+                });
+                View lineView = new View(getActivity());
+                lineView.setBackgroundColor(getResources().getColor(android.R.color.black));
+                final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                lineView.setLayoutParams(layoutParams);
+
+                detailsMovieContainer.addView(textView);
+                detailsMovieContainer.addView(lineView);
+
+            } while (data.moveToNext());
+        }
     }
 
     @Override

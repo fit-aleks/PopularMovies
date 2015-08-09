@@ -19,6 +19,7 @@ import com.fitaleks.popularmovies.R;
 import com.fitaleks.popularmovies.Utility;
 import com.fitaleks.popularmovies.data.Movie;
 import com.fitaleks.popularmovies.data.MoviesContract;
+import com.fitaleks.popularmovies.data.Trailer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -60,27 +61,17 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public PopularMoviesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapterFactory(new Movie.MovieTypeAdapterFactory())
-                .create();
-
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://api.themoviedb.org/3")
-                .setConverter(new GsonConverter(gson))
-                .build();
-
-        popularMoviesNetworkService = restAdapter.create(PopularMoviesNetworkService.class);
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+        popularMoviesNetworkService = PopularMoviesSyncAdapter.getRESTAdapter();
         final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
         Log.d(LOG_TAG, "allMovies = " + allMovies.toString());
         Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
+        Vector<ContentValues> cVTrailersVector = new Vector<>(allMovies.size());
         for (int i = 0; i < allMovies.size(); ++i) {
-            Movie movie = allMovies.get(i);
+            final Movie movie = allMovies.get(i);
 
             ContentValues movieValues = new ContentValues();
 
@@ -94,12 +85,33 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
 
+            final List<Trailer> allTrailers = popularMoviesNetworkService.getTrailers(movie.movieDbID, MOVIEDB_API_KEY);
+            for (int j = 0; j < allTrailers.size(); ++j) {
+                final Trailer trailer = allTrailers.get(j);
+                ContentValues trailerValues = new ContentValues();
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, movie.movieDbID);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TRAILER_ID, trailer.trailerId);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_ISO_639, trailer.iso639);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_KEY, trailer.key);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, trailer.name);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SITE, trailer.site);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, trailer.size);
+                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, trailer.type);
+                cVTrailersVector.add(trailerValues);
+            }
+            Log.d(LOG_TAG, "allTrailers = " + allTrailers.size());
+
             cVVector.add(movieValues);
         }
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
+            if (cVTrailersVector.size() > 0) {
+                ContentValues[] cvTrailersArray = new ContentValues[cVTrailersVector.size()];
+                cVTrailersVector.toArray(cvTrailersArray);
+                getContext().getContentResolver().bulkInsert(MoviesContract.TrailerEntry.CONTENT_URI, cvTrailersArray);
+            }
         }
 
     }
@@ -118,7 +130,6 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.content_authority), bundle);
-
     }
 
     /**
@@ -186,5 +197,20 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         ContentResolver.setSyncAutomatically(newAccount, context.getString(R.string.content_authority), true);
 
         syncImmediately(context);
+    }
+
+    public static PopularMoviesNetworkService getRESTAdapter() {
+        final Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapterFactory(new Movie.MovieTypeAdapterFactory())
+                .registerTypeAdapterFactory(new Trailer.TrailerTypeAdapterFactory())
+                .create();
+
+        final RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint("http://api.themoviedb.org/3")
+                .setConverter(new GsonConverter(gson))
+                .build();
+
+        return restAdapter.create(PopularMoviesNetworkService.class);
     }
 }
