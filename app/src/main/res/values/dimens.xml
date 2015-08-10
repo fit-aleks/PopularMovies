@@ -9,6 +9,7 @@
     <dimen name="title_vertical_padding">15dp</dimen>
 
     <dimen name="details_title_elevation">2dp</dimen>
+    <dimen name="details_fab_margin">8dp</dimen>
     <dimen name="card_corner_radius">4dp</dimen>
     <dimen name="card_content_vertical_padding">8dp</dimen>
 </resources>
