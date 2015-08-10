@@ -8,6 +8,7 @@
 
     <string name="details_rating" translatable="false"><xliff:g id="rating">%1.1f</xliff:g>/10</string>
     <string name="details_trailers_title">Trailers</string>
+    <string name="details_reviews_title">Reviews</string>
 
     <!-- Strings for synchronizing adapter -->
     <string name="sync_account_type" translatable="false">popularmovies.fitaleks.com</string>

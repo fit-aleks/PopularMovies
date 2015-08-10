@@ -20,6 +20,7 @@ public class MoviesContract {
     // Possible paths
     public static final String PATH_MOVIES = "movies";
     public static final String PATH_TRAILERS = "trailers";
+    public static final String PATH_REVIEWS = "reviews";
 
     /* Class that defines the table contents of the movie table */
     public static final class MovieEntry implements BaseColumns {
@@ -89,6 +90,32 @@ public class MoviesContract {
         public static final String COLUMN_MOVIE_ID = "movie_id";
 
         public static Uri buildTrailersUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+        public static String getMovieIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+
+    }
+
+    public static final class ReviewEntry implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEWS).build();
+        public static final String CONTENT_TYPE =
+                "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + "/" + PATH_REVIEWS;
+
+        public static final String CONTENT_ITEM_TYPE =
+                "vnd.android.cursor.item/" + CONTENT_AUTHORITY + "/" + PATH_REVIEWS;
+
+        public static final String TABLE_NAME = "reviews";
+
+        // ID in terms of themoviedb.com
+        public static final String COLUMN_REVIEW_ID = "id";
+        public static final String COLUMN_AUTHOR = "author";
+        public static final String COLUMN_CONTENT = "content";
+        public static final String COLUMN_MOVIE_ID = "movie_id";
+
+        public static Uri buildReviewUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 

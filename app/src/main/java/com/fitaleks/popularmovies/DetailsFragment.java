@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private final static String LOG_TAG = DetailsFragment.class.getSimpleName();
     private static final int DETAILS_MOVIE_LOADER = 0;
     private static final int DETAILS_TRAILERS_LOADER = 1;
+    private static final int DETAILS_REVIEWS_LOADER = 2;
 
     private long mMovieId;
 
@@ -49,14 +51,22 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             MoviesContract.TrailerEntry.COLUMN_NAME
     };
 
+    private static final String[] REVIEWS_COLUMNS = {
+            MoviesContract.ReviewEntry.TABLE_NAME + "." + MoviesContract.ReviewEntry._ID,
+            MoviesContract.ReviewEntry.COLUMN_AUTHOR,
+            MoviesContract.ReviewEntry.COLUMN_CONTENT
+    };
+
     private ImageView poster;
     private TextView title;
     private TextView year;
     private TextView duration;
     private TextView rating;
     private TextView overview;
-    private TextView trailersTitle;
     private LinearLayout detailsMovieContainer;
+    private LinearLayout detailsReviewContainer;
+    private CardView trailersCard;
+    private CardView reviewsCard;
 
 
     public static DetailsFragment newInstance(long movieId) {
@@ -85,7 +95,9 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         this.rating = (TextView) rootView.findViewById(R.id.details_movie_rating);
         this.overview = (TextView) rootView.findViewById(R.id.details_movie_overview);
         this.detailsMovieContainer = (LinearLayout) rootView.findViewById(R.id.details_trailers_container);
-        this.trailersTitle = (TextView) rootView.findViewById(R.id.details_trailers_title);
+        this.trailersCard = (CardView) rootView.findViewById(R.id.details_trailers_card);
+        this.reviewsCard = (CardView) rootView.findViewById(R.id.details_reviews_card);
+        this.detailsReviewContainer = (LinearLayout) rootView.findViewById(R.id.details_reviews_container);
 
         return rootView;
     }
@@ -98,6 +110,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                 && mMovieId != 0) {
             getLoaderManager().restartLoader(DETAILS_MOVIE_LOADER, null, this);
             getLoaderManager().restartLoader(DETAILS_TRAILERS_LOADER, null, this);
+            getLoaderManager().restartLoader(DETAILS_REVIEWS_LOADER, null, this);
         }
     }
 
@@ -108,6 +121,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         if (bundle != null) {
             getLoaderManager().initLoader(DETAILS_MOVIE_LOADER, null, this);
             getLoaderManager().initLoader(DETAILS_TRAILERS_LOADER, null, this);
+            getLoaderManager().initLoader(DETAILS_REVIEWS_LOADER, null, this);
         }
     }
 
@@ -129,6 +143,14 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                     null,
                     null,
                     null);
+        } else if (id == DETAILS_REVIEWS_LOADER) {
+            Uri movieById = MoviesContract.ReviewEntry.buildReviewUri(this.mMovieId);
+            return new CursorLoader(getActivity(),
+                    movieById,
+                    REVIEWS_COLUMNS,
+                    null,
+                    null,
+                    null);
         }
         throw new UnsupportedOperationException("Unknown id: " + id);
     }
@@ -138,7 +160,9 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         Log.d(LOG_TAG, "onLoadFinished");
         if (data == null || !data.moveToFirst()) {
             if (loader.getId() == DETAILS_TRAILERS_LOADER) {
-                this.trailersTitle.setVisibility(View.GONE);
+                this.trailersCard.setVisibility(View.GONE);
+            } else if (loader.getId() == DETAILS_REVIEWS_LOADER) {
+                this.reviewsCard.setVisibility(View.GONE);
             }
             return;
         }
@@ -158,7 +182,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
             this.overview.setText(overview);
         } else if (loader.getId() == DETAILS_TRAILERS_LOADER) {
-            this.trailersTitle.setVisibility(View.VISIBLE);
+            this.trailersCard.setVisibility(View.VISIBLE);
             detailsMovieContainer.removeAllViews();
             do {
                 final String name = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_NAME));
@@ -166,9 +190,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                 Log.d(LOG_TAG, "site = " + name + " key = " + key);
 
                 TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
-                textView.setPadding(0, 16, 0, 16);
                 textView.setText(name);
-                textView.setClickable(true);
                 textView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -189,6 +211,27 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
                 detailsMovieContainer.addView(textView);
                 detailsMovieContainer.addView(lineView);
+
+            } while (data.moveToNext());
+        } else if (loader.getId() == DETAILS_REVIEWS_LOADER) {
+            this.reviewsCard.setVisibility(View.VISIBLE);
+            detailsReviewContainer.removeAllViews();
+            do {
+                final String content = data.getString(data.getColumnIndex(MoviesContract.ReviewEntry.COLUMN_CONTENT));
+//                final String key = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_KEY));
+//                Log.d(LOG_TAG, "site = " + name + " key = " + key);
+
+                TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
+                textView.setText(content);
+                textView.setClickable(false);
+
+                View lineView = new View(getActivity());
+                lineView.setBackgroundColor(getResources().getColor(android.R.color.black));
+                final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                lineView.setLayoutParams(layoutParams);
+
+                detailsReviewContainer.addView(textView);
+                detailsReviewContainer.addView(lineView);
 
             } while (data.moveToNext());
         }

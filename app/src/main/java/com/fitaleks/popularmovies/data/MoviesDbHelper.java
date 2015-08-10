@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.fitaleks.popularmovies.data.MoviesContract.MovieEntry;
+import static com.fitaleks.popularmovies.data.MoviesContract.ReviewEntry;
 import static com.fitaleks.popularmovies.data.MoviesContract.TrailerEntry;
 
 /**
@@ -45,15 +46,24 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 TrailerEntry.COLUMN_TYPE + " STRING NOT NULL ," +
                 " UNIQUE (" + TrailerEntry.COLUMN_TRAILER_ID + ") ON CONFLICT REPLACE);";
 
+        final String SQL_CREATE_REVIEWS_TABLE = "CREATE TABLE " + ReviewEntry.TABLE_NAME + " (" +
+                ReviewEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                ReviewEntry.COLUMN_REVIEW_ID + " STRING NOT NULL ," +
+                ReviewEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL ," +
+                ReviewEntry.COLUMN_AUTHOR + " STRING NOT NULL ," +
+                ReviewEntry.COLUMN_CONTENT + " STRING NOT NULL ," +
+                " UNIQUE (" + ReviewEntry.COLUMN_REVIEW_ID + ") ON CONFLICT REPLACE);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIES_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_TRAILERS_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_REVIEWS_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TrailerEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

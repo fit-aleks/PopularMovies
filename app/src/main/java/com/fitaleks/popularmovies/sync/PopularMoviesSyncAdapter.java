@@ -19,10 +19,18 @@ import com.fitaleks.popularmovies.R;
 import com.fitaleks.popularmovies.Utility;
 import com.fitaleks.popularmovies.data.Movie;
 import com.fitaleks.popularmovies.data.MoviesContract;
+import com.fitaleks.popularmovies.data.Review;
 import com.fitaleks.popularmovies.data.Trailer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,6 +78,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d(LOG_TAG, "allMovies = " + allMovies.toString());
         Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
         Vector<ContentValues> cVTrailersVector = new Vector<>(allMovies.size());
+        Vector<ContentValues> cVReviewsVector = new Vector<>(allMovies.size());
         for (int i = 0; i < allMovies.size(); ++i) {
             final Movie movie = allMovies.get(i);
 
@@ -85,7 +94,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
 
-            final List<Trailer> allTrailers = popularMoviesNetworkService.getTrailers(movie.movieDbID, MOVIEDB_API_KEY);
+            final List<Trailer> allTrailers = popularMoviesNetworkService.getTrailers(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
             for (int j = 0; j < allTrailers.size(); ++j) {
                 final Trailer trailer = allTrailers.get(j);
                 ContentValues trailerValues = new ContentValues();
@@ -99,6 +108,17 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, trailer.type);
                 cVTrailersVector.add(trailerValues);
             }
+            final List<Review> allReviews = popularMoviesNetworkService.getReviews(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+            for (int j = 0; j < allReviews.size(); ++j) {
+                final Review review = allReviews.get(j);
+                ContentValues reviewValues = new ContentValues();
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, movie.movieDbID);
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, review.reviewID);
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, review.author);
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, review.content);
+                cVReviewsVector.add(reviewValues);
+
+            }
             Log.d(LOG_TAG, "allTrailers = " + allTrailers.size());
 
             cVVector.add(movieValues);
@@ -111,6 +131,11 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 ContentValues[] cvTrailersArray = new ContentValues[cVTrailersVector.size()];
                 cVTrailersVector.toArray(cvTrailersArray);
                 getContext().getContentResolver().bulkInsert(MoviesContract.TrailerEntry.CONTENT_URI, cvTrailersArray);
+            }
+            if (cVReviewsVector.size() > 0) {
+                ContentValues[] cvReviewsArray = new ContentValues[cVReviewsVector.size()];
+                cVReviewsVector.toArray(cvReviewsArray);
+                getContext().getContentResolver().bulkInsert(MoviesContract.ReviewEntry.CONTENT_URI, cvReviewsArray);
             }
         }
 
@@ -202,8 +227,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     public static PopularMoviesNetworkService getRESTAdapter() {
         final Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapterFactory(new Movie.MovieTypeAdapterFactory())
-                .registerTypeAdapterFactory(new Trailer.TrailerTypeAdapterFactory())
+                .registerTypeAdapterFactory(new MovieDBTypeAdapterFactory())
                 .create();
 
         final RestAdapter restAdapter = new RestAdapter.Builder()
@@ -212,5 +236,34 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 .build();
 
         return restAdapter.create(PopularMoviesNetworkService.class);
+    }
+
+    public static class MovieDBTypeAdapterFactory implements TypeAdapterFactory {
+        @Override
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            final TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+            final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
+
+            return new TypeAdapter<T>() {
+                @Override
+                public void write(JsonWriter out, T value) throws IOException {
+                    delegate.write(out, value);
+                }
+
+                @Override
+                public T read(JsonReader in) throws IOException {
+                    JsonElement jsonElement = elementAdapter.read(in);
+                    if (jsonElement.isJsonObject()) {
+                        JsonObject jsonObject = jsonElement.getAsJsonObject();
+                        if (jsonObject.has("results") && jsonObject.get("results").isJsonArray())
+                        {
+                            jsonElement = jsonObject.get("results");
+                        }
+                    }
+
+                    return delegate.fromJsonTree(jsonElement);
+                }
+            }.nullSafe();
+        }
     }
 }
