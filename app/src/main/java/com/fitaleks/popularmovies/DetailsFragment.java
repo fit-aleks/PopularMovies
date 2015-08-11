@@ -107,6 +107,12 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         return rootView;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
     private void updateMovieData() {
         Intent intent = new Intent(getActivity(), GetMovieDetailsService.class);
         intent.putExtra(GetMovieDetailsService.MOVIE_ID_QUERY_EXTRA, this.mMovieId);
