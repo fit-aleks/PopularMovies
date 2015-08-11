@@ -6,6 +6,7 @@ import com.fitaleks.popularmovies.data.Trailer;
 
 import java.util.List;
 
+import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;
@@ -22,6 +23,6 @@ public interface PopularMoviesNetworkService {
     List<Trailer> getTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
 
     @GET("/movie/{movie_id}/reviews")
-    List<Review> getReviews(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
+    void getReviews(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language, Callback<List<Review>> callback);
 
 }

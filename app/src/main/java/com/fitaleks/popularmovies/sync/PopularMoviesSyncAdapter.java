@@ -45,8 +45,13 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.concurrent.Executors;
 
+import retrofit.Callback;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.android.MainThreadExecutor;
+import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 
 /**
@@ -75,10 +80,9 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         popularMoviesNetworkService = PopularMoviesSyncAdapter.getRESTAdapter();
         final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-        Log.d(LOG_TAG, "allMovies = " + allMovies.toString());
         Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
-        Vector<ContentValues> cVTrailersVector = new Vector<>(allMovies.size());
-        Vector<ContentValues> cVReviewsVector = new Vector<>(allMovies.size());
+        Vector<ContentValues> cVTrailersVector = new Vector<>();
+
         for (int i = 0; i < allMovies.size(); ++i) {
             final Movie movie = allMovies.get(i);
 
@@ -108,18 +112,33 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, trailer.type);
                 cVTrailersVector.add(trailerValues);
             }
-            final List<Review> allReviews = popularMoviesNetworkService.getReviews(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-            for (int j = 0; j < allReviews.size(); ++j) {
-                final Review review = allReviews.get(j);
-                ContentValues reviewValues = new ContentValues();
-                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, movie.movieDbID);
-                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, review.reviewID);
-                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, review.author);
-                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, review.content);
-                cVReviewsVector.add(reviewValues);
+//            final List<Review> allReviews = popularMoviesNetworkService.getReviews(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+            popularMoviesNetworkService.getReviews(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage(), new Callback<List<Review>>() {
+                @Override
+                public void success(List<Review> reviews, Response response) {
+                    final Vector<ContentValues> cVReviewsVector = new Vector<>();
+                    for (int j = 0; j < reviews.size(); ++j) {
+                        final Review review = reviews.get(j);
+                        ContentValues reviewValues = new ContentValues();
+                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, movie.movieDbID);
+                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, review.reviewID);
+                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, review.author);
+                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, review.content);
+                        cVReviewsVector.add(reviewValues);
+                    }
+                    if (cVReviewsVector.size() > 0) {
+                        ContentValues[] cvReviewsArray = new ContentValues[cVReviewsVector.size()];
+                        cVReviewsVector.toArray(cvReviewsArray);
+                        getContext().getContentResolver().bulkInsert(MoviesContract.ReviewEntry.CONTENT_URI, cvReviewsArray);
+                    }
+                }
 
-            }
-            Log.d(LOG_TAG, "allTrailers = " + allTrailers.size());
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.e(LOG_TAG, "Reviews request failure", error);
+                }
+            });
+
 
             cVVector.add(movieValues);
         }
@@ -131,11 +150,6 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 ContentValues[] cvTrailersArray = new ContentValues[cVTrailersVector.size()];
                 cVTrailersVector.toArray(cvTrailersArray);
                 getContext().getContentResolver().bulkInsert(MoviesContract.TrailerEntry.CONTENT_URI, cvTrailersArray);
-            }
-            if (cVReviewsVector.size() > 0) {
-                ContentValues[] cvReviewsArray = new ContentValues[cVReviewsVector.size()];
-                cVReviewsVector.toArray(cvReviewsArray);
-                getContext().getContentResolver().bulkInsert(MoviesContract.ReviewEntry.CONTENT_URI, cvReviewsArray);
             }
         }
 
@@ -233,6 +247,8 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint("http://api.themoviedb.org/3")
                 .setConverter(new GsonConverter(gson))
+                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setExecutors(Executors.newFixedThreadPool(5), null)
                 .build();
 
         return restAdapter.create(PopularMoviesNetworkService.class);
