@@ -6,6 +6,11 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
 
+    <string name="fragment_title_movies">Movies</string>
+    <string name="fragment_title_tv">Tv Series</string>
+    <string name="fragment_title_favourite">Favourites</string>
+
+
     <string name="details_rating" translatable="false"><xliff:g id="rating">%1.1f</xliff:g>/10</string>
     <string name="details_trailers_title">Trailers</string>
     <string name="details_reviews_title">Reviews</string>

@@ -35,10 +35,10 @@ public class MoviesAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
         final PosterItemViewHolder holder = (PosterItemViewHolder)view.getTag();
 
-        final String movieTitle = cursor.getString(MoviesFragment.COL_TITLE);
+        final String movieTitle = cursor.getString(MoviesListFragment.COL_TITLE);
         holder.title.setText(movieTitle);
 
-        final String imageUrl = "http://image.tmdb.org/t/p/w185" + cursor.getString(MoviesFragment.COL_IMAGE_PATH);
+        final String imageUrl = "http://image.tmdb.org/t/p/w185" + cursor.getString(MoviesListFragment.COL_IMAGE_PATH);
         Picasso.with(context).load(imageUrl).into(holder.image);
     }
 

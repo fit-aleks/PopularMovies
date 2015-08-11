@@ -20,6 +20,7 @@ import com.fitaleks.popularmovies.Utility;
 import com.fitaleks.popularmovies.data.Movie;
 import com.fitaleks.popularmovies.data.MoviesContract;
 import com.fitaleks.popularmovies.data.Review;
+import com.fitaleks.popularmovies.data.TVSeries;
 import com.fitaleks.popularmovies.data.Trailer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -76,7 +77,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         popularMoviesNetworkService = NetworkHelper.getMovieRESTAdapter();
         final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-        Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
+        final Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
 
         for (int i = 0; i < allMovies.size(); ++i) {
             final Movie movie = allMovies.get(i);
@@ -92,12 +93,40 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_ADULT, movie.isAdult);
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 1);
 
             cVVector.add(movieValues);
         }
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
+            getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
+
+        }
+
+        final List<TVSeries> allTvSeries = popularMoviesNetworkService.getAllTvSeries(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+        final Vector<ContentValues> cVTvVector = new Vector<>(allMovies.size());
+
+        for (int i = 0; i < allTvSeries.size(); ++i) {
+            final TVSeries movie = allTvSeries.get(i);
+
+            ContentValues tvSeriesValues = new ContentValues();
+
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, movie.movieDbID);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, movie.originalLang);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, movie.title);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 0);
+
+            cVTvVector.add(tvSeriesValues);
+        }
+        if ( cVTvVector.size() > 0 ) {
+            ContentValues[] cvArray = new ContentValues[cVTvVector.size()];
+            cVTvVector.toArray(cvArray);
             getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
 
         }

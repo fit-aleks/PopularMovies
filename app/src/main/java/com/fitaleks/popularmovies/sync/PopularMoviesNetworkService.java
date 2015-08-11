@@ -2,6 +2,7 @@ package com.fitaleks.popularmovies.sync;
 
 import com.fitaleks.popularmovies.data.Movie;
 import com.fitaleks.popularmovies.data.Review;
+import com.fitaleks.popularmovies.data.TVSeries;
 import com.fitaleks.popularmovies.data.Trailer;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public interface PopularMoviesNetworkService {
 
     @GET("/discover/movie")
     List<Movie> getAllMovies(@Query("api_key") String apiKey, @Query("language") String language);
+
+    @GET("/discover/tv")
+    List<TVSeries> getAllTvSeries(@Query("api_key") String apiKey, @Query("language") String language);
 
     @GET("/movie/{movie_id}/videos")
     List<Trailer> getTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);

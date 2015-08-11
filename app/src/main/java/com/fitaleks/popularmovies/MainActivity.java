@@ -3,13 +3,14 @@ package com.fitaleks.popularmovies;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.fitaleks.popularmovies.sync.PopularMoviesSyncAdapter;
 
 
-public class MainActivity extends AppCompatActivity implements MoviesFragment.MovieSelectedCallback {
+public class MainActivity extends AppCompatActivity implements MoviesListFragment.MovieSelectedCallback {
 
     private boolean mTwoPane;
 

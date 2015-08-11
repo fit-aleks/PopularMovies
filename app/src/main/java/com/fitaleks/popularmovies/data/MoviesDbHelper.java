@@ -24,14 +24,15 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_MOVIES_TABLE = "CREATE TABLE " + MovieEntry.TABLE_NAME + " (" +
                 MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 MovieEntry.COLUMN_MOVIEDB_ID + " INTEGER NOT NULL ," +
-                MovieEntry.COLUMN_IS_ADULT+ " INTEGER NOT NULL ," +
+                MovieEntry.COLUMN_IS_ADULT+ " INTEGER DEFAULT 0 ," +
                 MovieEntry.COLUMN_ORIGINAL_LANGUAGE + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_OVERVIEW + " TEXT DEFAULT '', " +
-                MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                MovieEntry.COLUMN_OVERVIEW + " TEXT DEFAULT '' , " +
+                MovieEntry.COLUMN_RELEASE_DATE + " TEXT DEFAULT '' , " +
                 MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
                 MovieEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_POPULARITY + " REAL NOT NULL, " +
+                MovieEntry.COLUMN_IS_MOVIE + " INTEGER NOT NULL DEFAULT 0 , " +
                 " UNIQUE (" + MovieEntry.COLUMN_MOVIEDB_ID + ") ON CONFLICT REPLACE);";
 
         final String SQL_CREATE_TRAILERS_TABLE = "CREATE TABLE " + TrailerEntry.TABLE_NAME + " (" +

@@ -62,6 +62,9 @@ public class MoviesContract {
         // poster url path
         public static final String COLUMN_POPULARITY = "popularity";
 
+        // is this data relates to movie or tv
+        public static final String COLUMN_IS_MOVIE = "is_movie";
+
 
         public static Uri buildMoviesUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
