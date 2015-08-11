@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -67,6 +68,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private LinearLayout detailsReviewContainer;
     private CardView trailersCard;
     private CardView reviewsCard;
+    private FloatingActionButton fabLike;
 
 
     public static DetailsFragment newInstance(long movieId) {
@@ -98,6 +100,14 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         this.trailersCard = (CardView) rootView.findViewById(R.id.details_trailers_card);
         this.reviewsCard = (CardView) rootView.findViewById(R.id.details_reviews_card);
         this.detailsReviewContainer = (LinearLayout) rootView.findViewById(R.id.details_reviews_container);
+        this.fabLike = (FloatingActionButton) rootView.findViewById(R.id.details_fab_like);
+
+        this.fabLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
         return rootView;
     }

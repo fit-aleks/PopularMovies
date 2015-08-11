@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<android.support.design.widget.CoordinatorLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-<ScrollView
+<android.support.v4.widget.NestedScrollView
+    android:id="@+id/details_scrollView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
         android:orientation="vertical"
@@ -147,19 +150,20 @@
 
     </LinearLayout>
 
-</ScrollView>
+</android.support.v4.widget.NestedScrollView>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/myFAB"
+        android:id="@+id/details_fab_like"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/fab_heart"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="@dimen/details_fab_margin"
-        android:layout_marginBottom="@dimen/details_fab_margin"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="@dimen/details_fab_margin"
+        app:layout_anchor="@id/details_scrollView"
+        app:layout_anchorGravity="bottom|right|end"
         app:backgroundTint="@color/primary_green"
         app:elevation="@dimen/fab_elevation"
-        app:borderWidth="0dp"/>
+        app:borderWidth="0dp"
+        app:layout_behavior="com.fitaleks.popularmovies.ui.ScrollAwareFABBehavior" />
 
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
