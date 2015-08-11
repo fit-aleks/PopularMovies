@@ -1,5 +1,6 @@
 package com.fitaleks.popularmovies;
 
+import android.app.IntentService;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
@@ -21,7 +22,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fitaleks.popularmovies.data.MoviesContract;
+import com.fitaleks.popularmovies.sync.GetMovieDetailsService;
 import com.squareup.picasso.Picasso;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 /**
  * Created by alexanderkulikovskiy on 11.07.15.
@@ -58,18 +63,16 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             MoviesContract.ReviewEntry.COLUMN_CONTENT
     };
 
-    private ImageView poster;
-    private TextView title;
-    private TextView year;
-    private TextView duration;
-    private TextView rating;
-    private TextView overview;
-    private LinearLayout detailsMovieContainer;
-    private LinearLayout detailsReviewContainer;
-    private CardView trailersCard;
-    private CardView reviewsCard;
-    private FloatingActionButton fabLike;
-
+    @Bind(R.id.details_movie_poster) ImageView poster;
+    @Bind(R.id.details_movie_title) TextView title;
+    @Bind(R.id.details_movie_year) TextView year;
+    @Bind(R.id.details_movie_rating) TextView rating;
+    @Bind(R.id.details_movie_overview) TextView overview;
+    @Bind(R.id.details_trailers_container) LinearLayout detailsMovieContainer;
+    @Bind(R.id.details_reviews_container) LinearLayout detailsReviewContainer;
+    @Bind(R.id.details_trailers_card) CardView trailersCard;
+    @Bind(R.id.details_reviews_card) CardView reviewsCard;
+    @Bind(R.id.details_fab_like) FloatingActionButton fabLike;
 
     public static DetailsFragment newInstance(long movieId) {
         DetailsFragment detailFragment = new DetailsFragment();
@@ -89,18 +92,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             mMovieId = arguments.getLong(DetailsActivity.KEY_MOVIE_ID);
         }
 
-        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
-        this.poster = (ImageView) rootView.findViewById(R.id.details_movie_poster);
-        this.title = (TextView) rootView.findViewById(R.id.details_movie_title);
-        this.year = (TextView) rootView.findViewById(R.id.details_movie_year);
-        this.duration = (TextView) rootView.findViewById(R.id.details_movie_duration);
-        this.rating = (TextView) rootView.findViewById(R.id.details_movie_rating);
-        this.overview = (TextView) rootView.findViewById(R.id.details_movie_overview);
-        this.detailsMovieContainer = (LinearLayout) rootView.findViewById(R.id.details_trailers_container);
-        this.trailersCard = (CardView) rootView.findViewById(R.id.details_trailers_card);
-        this.reviewsCard = (CardView) rootView.findViewById(R.id.details_reviews_card);
-        this.detailsReviewContainer = (LinearLayout) rootView.findViewById(R.id.details_reviews_container);
-        this.fabLike = (FloatingActionButton) rootView.findViewById(R.id.details_fab_like);
+        final View rootView = inflater.inflate(R.layout.fragment_details, container, false);
+        ButterKnife.bind(this, rootView);
 
         this.fabLike.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,9 +102,15 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                 fabLike.setImageResource(Utility.isMovieFavourite(getActivity(), mMovieId) ? R.drawable.fab_heart : R.drawable.fab_heart_dislike);
             }
         });
-        this.fabLike.setImageResource( Utility.isMovieFavourite(getActivity(), mMovieId) ? R.drawable.fab_heart : R.drawable.fab_heart_dislike );
-
+        this.fabLike.setImageResource(Utility.isMovieFavourite(getActivity(), mMovieId) ? R.drawable.fab_heart : R.drawable.fab_heart_dislike);
+        updateMovieData();
         return rootView;
+    }
+
+    private void updateMovieData() {
+        Intent intent = new Intent(getActivity(), GetMovieDetailsService.class);
+        intent.putExtra(GetMovieDetailsService.MOVIE_ID_QUERY_EXTRA, this.mMovieId);
+        getActivity().startService(intent);
     }
 
     @Override

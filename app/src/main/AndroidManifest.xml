@@ -67,6 +67,8 @@
                 android:resource="@xml/syncadapter"/>
         </service>
 
+        <service android:name=".sync.GetMovieDetailsService"/>
+
     </application>
 
 </manifest>

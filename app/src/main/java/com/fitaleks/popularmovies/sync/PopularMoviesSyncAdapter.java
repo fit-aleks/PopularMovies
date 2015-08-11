@@ -58,11 +58,7 @@ import retrofit.converter.GsonConverter;
  * Created by alexanderkulikovskiy on 10.07.15.
  */
 public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
-
     private final String LOG_TAG = PopularMoviesSyncAdapter.class.getSimpleName();
-
-    private static final String MOVIEDB_API_KEY     = "375f92998282f1a4bb47492812dc0123";
-    private static final String MOVIEDB_URL         = "http://api.themoviedb.org/3/discover/movie";
 
     public static final int SYNC_INTERVAL = 60 * 3;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
@@ -78,10 +74,9 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        popularMoviesNetworkService = PopularMoviesSyncAdapter.getRESTAdapter();
-        final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+        popularMoviesNetworkService = NetworkHelper.getMovieRESTAdapter();
+        final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
         Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
-        Vector<ContentValues> cVTrailersVector = new Vector<>();
 
         for (int i = 0; i < allMovies.size(); ++i) {
             final Movie movie = allMovies.get(i);
@@ -98,59 +93,13 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
             movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
 
-            final List<Trailer> allTrailers = popularMoviesNetworkService.getTrailers(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-            for (int j = 0; j < allTrailers.size(); ++j) {
-                final Trailer trailer = allTrailers.get(j);
-                ContentValues trailerValues = new ContentValues();
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, movie.movieDbID);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TRAILER_ID, trailer.trailerId);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_ISO_639, trailer.iso639);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_KEY, trailer.key);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, trailer.name);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SITE, trailer.site);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, trailer.size);
-                trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, trailer.type);
-                cVTrailersVector.add(trailerValues);
-            }
-//            final List<Review> allReviews = popularMoviesNetworkService.getReviews(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-            popularMoviesNetworkService.getReviews(movie.movieDbID, MOVIEDB_API_KEY, Locale.getDefault().getLanguage(), new Callback<List<Review>>() {
-                @Override
-                public void success(List<Review> reviews, Response response) {
-                    final Vector<ContentValues> cVReviewsVector = new Vector<>();
-                    for (int j = 0; j < reviews.size(); ++j) {
-                        final Review review = reviews.get(j);
-                        ContentValues reviewValues = new ContentValues();
-                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, movie.movieDbID);
-                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, review.reviewID);
-                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, review.author);
-                        reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, review.content);
-                        cVReviewsVector.add(reviewValues);
-                    }
-                    if (cVReviewsVector.size() > 0) {
-                        ContentValues[] cvReviewsArray = new ContentValues[cVReviewsVector.size()];
-                        cVReviewsVector.toArray(cvReviewsArray);
-                        getContext().getContentResolver().bulkInsert(MoviesContract.ReviewEntry.CONTENT_URI, cvReviewsArray);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    Log.e(LOG_TAG, "Reviews request failure", error);
-                }
-            });
-
-
             cVVector.add(movieValues);
         }
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
-            if (cVTrailersVector.size() > 0) {
-                ContentValues[] cvTrailersArray = new ContentValues[cVTrailersVector.size()];
-                cVTrailersVector.toArray(cvTrailersArray);
-                getContext().getContentResolver().bulkInsert(MoviesContract.TrailerEntry.CONTENT_URI, cvTrailersArray);
-            }
+
         }
 
     }
@@ -238,48 +187,4 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         syncImmediately(context);
     }
 
-    public static PopularMoviesNetworkService getRESTAdapter() {
-        final Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapterFactory(new MovieDBTypeAdapterFactory())
-                .create();
-
-        final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://api.themoviedb.org/3")
-                .setConverter(new GsonConverter(gson))
-                .setLogLevel(RestAdapter.LogLevel.FULL)
-                .setExecutors(Executors.newFixedThreadPool(5), null)
-                .build();
-
-        return restAdapter.create(PopularMoviesNetworkService.class);
-    }
-
-    public static class MovieDBTypeAdapterFactory implements TypeAdapterFactory {
-        @Override
-        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-            final TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
-            final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-
-            return new TypeAdapter<T>() {
-                @Override
-                public void write(JsonWriter out, T value) throws IOException {
-                    delegate.write(out, value);
-                }
-
-                @Override
-                public T read(JsonReader in) throws IOException {
-                    JsonElement jsonElement = elementAdapter.read(in);
-                    if (jsonElement.isJsonObject()) {
-                        JsonObject jsonObject = jsonElement.getAsJsonObject();
-                        if (jsonObject.has("results") && jsonObject.get("results").isJsonArray())
-                        {
-                            jsonElement = jsonObject.get("results");
-                        }
-                    }
-
-                    return delegate.fromJsonTree(jsonElement);
-                }
-            }.nullSafe();
-        }
-    }
 }
