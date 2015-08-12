@@ -29,4 +29,7 @@ public interface PopularMoviesNetworkService {
     @GET("/movie/{movie_id}/reviews")
     List<Review> getReviews(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
 
+    @GET("/tv/{movie_id}/videos")
+    List<Trailer> getTvTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
+
 }

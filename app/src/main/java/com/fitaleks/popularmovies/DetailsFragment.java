@@ -38,6 +38,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private static final int DETAILS_REVIEWS_LOADER = 2;
 
     private long mMovieId;
+    private boolean mIsMovie;
 
     private static final String[] DETAILS_COLUMNS = {
             MoviesContract.MovieEntry.TABLE_NAME + "." + MoviesContract.MovieEntry._ID,
@@ -45,7 +46,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             MoviesContract.MovieEntry.COLUMN_POSTER_PATH,
             MoviesContract.MovieEntry.COLUMN_RELEASE_DATE,
             MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE,
-            MoviesContract.MovieEntry.COLUMN_OVERVIEW
+            MoviesContract.MovieEntry.COLUMN_OVERVIEW,
+            MoviesContract.MovieEntry.COLUMN_IS_MOVIE
     };
 
     private static final String[] TRAILERS_COLUMNS = {
@@ -103,7 +105,6 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             }
         });
         this.fabLike.setImageResource(Utility.isMovieFavourite(getActivity(), mMovieId) ? R.drawable.fab_heart : R.drawable.fab_heart_dislike);
-        updateMovieData();
         return rootView;
     }
 
@@ -116,6 +117,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private void updateMovieData() {
         Intent intent = new Intent(getActivity(), GetMovieDetailsService.class);
         intent.putExtra(GetMovieDetailsService.MOVIE_ID_QUERY_EXTRA, this.mMovieId);
+        intent.putExtra(GetMovieDetailsService.IS_MOVIE_QUERY_EXTRA, this.mIsMovie);
         getActivity().startService(intent);
     }
 
@@ -198,6 +200,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
             String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
             this.overview.setText(overview);
+            this.mIsMovie = data.getInt(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_IS_MOVIE)) == 1;
+            updateMovieData();
         } else if (loader.getId() == DETAILS_TRAILERS_LOADER) {
             this.trailersCard.setVisibility(View.VISIBLE);
             detailsMovieContainer.removeAllViews();

@@ -105,8 +105,21 @@ public class MoviesListFragment extends Fragment implements LoaderManager.Loader
         } else {
             sortOrder = MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE + " DESC";
         }
-        final String selection = MoviesContract.MovieEntry.COLUMN_IS_MOVIE  + " = "
-                + (this.listType == FragmentListTypes.MOVIES ? 1 : 0);
+        String selection = null;
+        switch (this.listType) {
+            case MOVIES: {
+                selection = MoviesContract.MovieEntry.COLUMN_IS_MOVIE  + " = " + 1;
+                break;
+            }
+            case TV_SERIES: {
+                selection = MoviesContract.MovieEntry.COLUMN_IS_MOVIE  + " = " + 0;
+                break;
+            }
+            case FAVOURITES: {
+                selection = MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID + " IN ( "
+                        + Utility.getAllFavouritesMovieIds(getActivity()) + " ) ";
+            }
+        }
 
         return new CursorLoader(getActivity(),
                 MoviesContract.MovieEntry.CONTENT_URI,

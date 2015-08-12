@@ -27,6 +27,7 @@ import retrofit.client.Response;
 public class GetMovieDetailsService extends IntentService {
     private static final String LOG_TAG = GetMovieDetailsService.class.getSimpleName();
     public static final String MOVIE_ID_QUERY_EXTRA = "movie_id";
+    public static final String IS_MOVIE_QUERY_EXTRA = "is_movie";
 
     public GetMovieDetailsService() {
         super("GetMovieDetailsService");
@@ -35,12 +36,15 @@ public class GetMovieDetailsService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         long movieDbID = intent.getLongExtra(MOVIE_ID_QUERY_EXTRA, 0);
+        boolean isMovie = intent.getBooleanExtra(IS_MOVIE_QUERY_EXTRA, true);
         if (movieDbID <= 0) {
             return;
         }
         final PopularMoviesNetworkService popularMoviesNetworkService = NetworkHelper.getMovieRESTAdapter();
         final Vector<ContentValues> cVTrailersVector = new Vector<>();
-        final List<Trailer> allTrailers = popularMoviesNetworkService.getTrailers(movieDbID, NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+        final List<Trailer> allTrailers = isMovie ?
+                popularMoviesNetworkService.getTrailers(movieDbID, NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage())
+                : popularMoviesNetworkService.getTvTrailers(movieDbID, NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
         for (final Trailer trailer : allTrailers) {
             ContentValues trailerValues = new ContentValues();
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, movieDbID);
@@ -53,19 +57,23 @@ public class GetMovieDetailsService extends IntentService {
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, trailer.type);
             cVTrailersVector.add(trailerValues);
         }
-        saveContentValuesToDB(MoviesContract.TrailerEntry.CONTENT_URI, cVTrailersVector);
 
-        final List<Review> allReviews = popularMoviesNetworkService.getReviews(movieDbID, NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-        final Vector<ContentValues> cVReviewsVector = new Vector<>();
-        for (final Review review : allReviews) {
-            ContentValues reviewValues = new ContentValues();
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, movieDbID);
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, review.author);
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, review.content);
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, review.reviewID);
-            cVReviewsVector.add(reviewValues);
+        saveContentValuesToDB(MoviesContract.TrailerEntry.CONTENT_URI, cVTrailersVector);
+        // there are no reviews for tv shows yet
+        if (isMovie) {
+            final List<Review> allReviews = popularMoviesNetworkService.getReviews(movieDbID, NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
+            final Vector<ContentValues> cVReviewsVector = new Vector<>();
+            for (final Review review : allReviews) {
+                ContentValues reviewValues = new ContentValues();
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, movieDbID);
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, review.author);
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, review.content);
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, review.reviewID);
+                cVReviewsVector.add(reviewValues);
+            }
+            saveContentValuesToDB(MoviesContract.ReviewEntry.CONTENT_URI, cVReviewsVector);
         }
-        saveContentValuesToDB(MoviesContract.ReviewEntry.CONTENT_URI, cVReviewsVector);
+
     }
 
     private void saveContentValuesToDB(@NonNull Uri tableUri, @NonNull Vector<ContentValues> cVVector) {
