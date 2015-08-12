@@ -20,8 +20,9 @@ public class Utility {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String allFavs = prefs.getString(PREF_KEY_ALL_FAVOURITES, "");
         if (allFavs != null && allFavs.contains(Long.toString(movieId))) {
-            allFavs = allFavs.replace(Long.toString(movieId), "").replace(",,", "");
+            allFavs = allFavs.replace(Long.toString(movieId), "").replace(",,", "").trim();
             allFavs = allFavs.startsWith(",") ? allFavs.substring(1) : allFavs;
+            allFavs = allFavs.endsWith(",") ? allFavs.substring(0, allFavs.length() - 1) : allFavs;
         } else if (allFavs == null || allFavs.length() == 0){
             allFavs = Long.toString(movieId);
         } else {

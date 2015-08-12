@@ -14,6 +14,9 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by alexanderkulikovskiy on 07.07.15.
  */
@@ -43,12 +46,11 @@ public class MoviesAdapter extends CursorAdapter {
     }
 
     public static class PosterItemViewHolder {
-        public final ImageView image;
-        public final TextView title;
+        @Bind(R.id.poster_img) ImageView image;
+        @Bind(R.id.poster_title) TextView title;
 
         public PosterItemViewHolder(View v) {
-            this.image = (ImageView)v.findViewById(R.id.poster_img);
-            this.title = (TextView)v.findViewById(R.id.poster_title);
+            ButterKnife.bind(this, v);
         }
     }
 }
