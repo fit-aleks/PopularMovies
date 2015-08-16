@@ -117,7 +117,6 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             }
         });
         this.fabLike.setImageResource(Utility.isMovieFavourite(getActivity(), mMovieId) ? R.drawable.fab_heart : R.drawable.fab_heart_dislike);
-        this.mShotShareStr = getString(R.string.share_movie);
         return rootView;
     }
 
