@@ -18,18 +18,18 @@ import retrofit.http.Query;
 public interface PopularMoviesNetworkService {
 
     @GET("/discover/movie")
-    List<Movie> getAllMovies(@Query("api_key") String apiKey, @Query("language") String language);
+    void getAllMovies(@Query("api_key") String apiKey, @Query("language") String language, Callback<List<Movie>> callback);
 
     @GET("/discover/tv")
-    List<TVSeries> getAllTvSeries(@Query("api_key") String apiKey, @Query("language") String language);
+    void getAllTvSeries(@Query("api_key") String apiKey, @Query("language") String language, Callback<List<TVSeries>> callback);
 
     @GET("/movie/{movie_id}/videos")
-    List<Trailer> getTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
+    void getTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language, Callback<List<Trailer>> callback);
 
     @GET("/movie/{movie_id}/reviews")
-    List<Review> getReviews(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
+    void getReviews(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language, Callback<List<Review>> callback);
 
     @GET("/tv/{movie_id}/videos")
-    List<Trailer> getTvTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language);
+    void getTvTrailers(@Path("movie_id") long movieId, @Query("api_key") String apiKey, @Query("language") String language, Callback<List<Trailer>> callback);
 
 }

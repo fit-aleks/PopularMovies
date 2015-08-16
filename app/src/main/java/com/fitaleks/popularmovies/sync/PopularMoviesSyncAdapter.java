@@ -79,60 +79,76 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
         popularMoviesNetworkService = NetworkHelper.getMovieRESTAdapter();
-        final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-        final Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
+        popularMoviesNetworkService.getAllMovies(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage(), new Callback<List<Movie>>() {
+            @Override
+            public void success(List<Movie> allMovies, Response response) {
+                final Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
+                for (int i = 0; i < allMovies.size(); ++i) {
+                    final Movie movie = allMovies.get(i);
 
-        for (int i = 0; i < allMovies.size(); ++i) {
-            final Movie movie = allMovies.get(i);
+                    ContentValues movieValues = new ContentValues();
 
-            ContentValues movieValues = new ContentValues();
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, movie.movieDbID);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, movie.originalLang);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, movie.title);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_ADULT, movie.isAdult);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
+                    movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 1);
 
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, movie.movieDbID);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, movie.originalLang);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, movie.title);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_ADULT, movie.isAdult);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
-            movieValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 1);
+                    cVVector.add(movieValues);
+                }
+                if ( cVVector.size() > 0 ) {
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
 
-            cVVector.add(movieValues);
-        }
-        if ( cVVector.size() > 0 ) {
-            ContentValues[] cvArray = new ContentValues[cVVector.size()];
-            cVVector.toArray(cvArray);
-            getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
+                }
+            }
 
-        }
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e(LOG_TAG, "Retrieving movies error", error);
+            }
+        });
 
-        final List<TVSeries> allTvSeries = popularMoviesNetworkService.getAllTvSeries(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
-        final Vector<ContentValues> cVTvVector = new Vector<>(allMovies.size());
+        popularMoviesNetworkService.getAllTvSeries(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage(), new Callback<List<TVSeries>>() {
+            @Override
+            public void success(List<TVSeries> allTvSeries, Response response) {
+                final Vector<ContentValues> cVTvVector = new Vector<>(allTvSeries.size());
+                for (int i = 0; i < allTvSeries.size(); ++i) {
+                    final TVSeries tvSeries = allTvSeries.get(i);
 
-        for (int i = 0; i < allTvSeries.size(); ++i) {
-            final TVSeries tvSeries = allTvSeries.get(i);
+                    ContentValues tvSeriesValues = new ContentValues();
 
-            ContentValues tvSeriesValues = new ContentValues();
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, tvSeries.movieDbID);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, tvSeries.originalLang);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, tvSeries.overview);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, tvSeries.releaseDate);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, tvSeries.title);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, tvSeries.voteAverage);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, tvSeries.posterPath);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, tvSeries.popularity);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 0);
 
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, tvSeries.movieDbID);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, tvSeries.originalLang);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, tvSeries.overview);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, tvSeries.releaseDate);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, tvSeries.title);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, tvSeries.voteAverage);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, tvSeries.posterPath);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, tvSeries.popularity);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 0);
+                    cVTvVector.add(tvSeriesValues);
+                }
+                if ( cVTvVector.size() > 0 ) {
+                    ContentValues[] cvArray = new ContentValues[cVTvVector.size()];
+                    cVTvVector.toArray(cvArray);
+                    getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
 
-            cVTvVector.add(tvSeriesValues);
-        }
-        if ( cVTvVector.size() > 0 ) {
-            ContentValues[] cvArray = new ContentValues[cVTvVector.size()];
-            cVTvVector.toArray(cvArray);
-            getContext().getContentResolver().bulkInsert(MoviesContract.MovieEntry.CONTENT_URI, cvArray);
+                }
+            }
 
-        }
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e(LOG_TAG, "Retrieving tv series error", error);
+            }
+        });
 
     }
 
