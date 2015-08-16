@@ -127,7 +127,7 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                     tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, tvSeries.movieDbID);
                     tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, tvSeries.originalLang);
                     tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, tvSeries.overview);
-                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, tvSeries.releaseDate);
+                    tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, tvSeries.firstAirDate);
                     tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, tvSeries.title);
                     tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, tvSeries.voteAverage);
                     tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, tvSeries.posterPath);

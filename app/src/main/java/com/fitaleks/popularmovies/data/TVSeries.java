@@ -8,12 +8,11 @@ import com.google.gson.annotations.SerializedName;
 public class TVSeries {
     @SerializedName("id")
     public long movieDbID;
-//    @SerializedName("adult")
-//    public boolean isAdult;
     @SerializedName("original_language")
     public String originalLang;
     public String overview;
-    public String releaseDate;
+    @SerializedName("first_air_date")
+    public String firstAirDate;
     @SerializedName("name")
     public String title;
     public double voteAverage;
