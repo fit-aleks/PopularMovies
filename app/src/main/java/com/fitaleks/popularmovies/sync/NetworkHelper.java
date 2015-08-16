@@ -1,5 +1,9 @@
 package com.fitaleks.popularmovies.sync;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -15,6 +19,10 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import retrofit.RestAdapter;
+import retrofit.client.Client;
+import retrofit.client.OkClient;
+import retrofit.client.Request;
+import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 
 /**
@@ -32,10 +40,15 @@ public class NetworkHelper {
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint("http://api.themoviedb.org/3")
                 .setConverter(new GsonConverter(gson))
-                .setLogLevel(RestAdapter.LogLevel.FULL)
                 .build();
 
         return restAdapter.create(PopularMoviesNetworkService.class);
+    }
+
+    public static boolean isConnected(final Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
     }
 
     private static class MovieDBTypeAdapterFactory implements TypeAdapterFactory {

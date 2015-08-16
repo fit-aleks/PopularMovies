@@ -75,6 +75,9 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+        if (!NetworkHelper.isConnected(getContext())) {
+            return;
+        }
         popularMoviesNetworkService = NetworkHelper.getMovieRESTAdapter();
         final List<Movie> allMovies = popularMoviesNetworkService.getAllMovies(NetworkHelper.MOVIEDB_API_KEY, Locale.getDefault().getLanguage());
         final Vector<ContentValues> cVVector = new Vector<>(allMovies.size());
@@ -108,18 +111,18 @@ public class PopularMoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         final Vector<ContentValues> cVTvVector = new Vector<>(allMovies.size());
 
         for (int i = 0; i < allTvSeries.size(); ++i) {
-            final TVSeries movie = allTvSeries.get(i);
+            final TVSeries tvSeries = allTvSeries.get(i);
 
             ContentValues tvSeriesValues = new ContentValues();
 
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, movie.movieDbID);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, movie.originalLang);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, movie.overview);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, movie.title);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, movie.posterPath);
-            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, movie.popularity);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_MOVIEDB_ID, tvSeries.movieDbID);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, tvSeries.originalLang);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, tvSeries.overview);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, tvSeries.releaseDate);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, tvSeries.title);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, tvSeries.voteAverage);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, tvSeries.posterPath);
+            tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, tvSeries.popularity);
             tvSeriesValues.put(MoviesContract.MovieEntry.COLUMN_IS_MOVIE, 0);
 
             cVTvVector.add(tvSeriesValues);

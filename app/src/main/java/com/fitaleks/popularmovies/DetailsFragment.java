@@ -12,9 +12,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -65,6 +70,9 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             MoviesContract.ReviewEntry.COLUMN_CONTENT
     };
 
+    private ShareActionProvider mShareActionProvider;
+    private String mShotShareStr;
+
     @Bind(R.id.details_movie_poster) ImageView poster;
     @Bind(R.id.details_movie_title) TextView title;
     @Bind(R.id.details_movie_year) TextView year;
@@ -75,6 +83,10 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     @Bind(R.id.details_trailers_card) CardView trailersCard;
     @Bind(R.id.details_reviews_card) CardView reviewsCard;
     @Bind(R.id.details_fab_like) FloatingActionButton fabLike;
+
+    public DetailsFragment() {
+        setHasOptionsMenu(true);
+    }
 
     public static DetailsFragment newInstance(long movieId) {
         DetailsFragment detailFragment = new DetailsFragment();
@@ -105,6 +117,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             }
         });
         this.fabLike.setImageResource(Utility.isMovieFavourite(getActivity(), mMovieId) ? R.drawable.fab_heart : R.drawable.fab_heart_dislike);
+        this.mShotShareStr = getString(R.string.share_movie);
         return rootView;
     }
 
@@ -142,6 +155,29 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             getLoaderManager().initLoader(DETAILS_TRAILERS_LOADER, null, this);
             getLoaderManager().initLoader(DETAILS_REVIEWS_LOADER, null, this);
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_details, menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_item_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        // Attach an intent to this ShareActionProvider.  You can update this at any time,
+        // like when the user selects a new piece of data they might like to share.
+        if (mShareActionProvider != null ) {
+            mShareActionProvider.setShareIntent(createShareShotIntent());
+        } else {
+            Log.d(LOG_TAG, "Share Action Provider is null?");
+        }
+    }
+
+    private Intent createShareShotIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mShotShareStr);
+        return shareIntent;
     }
 
     @Override
@@ -202,13 +238,29 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             this.overview.setText(overview);
             this.mIsMovie = data.getInt(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_IS_MOVIE)) == 1;
             updateMovieData();
+            if (this.trailersCard.getVisibility() == View.GONE) {
+                this.mShotShareStr = String.format(getString(R.string.share_movie), title);
+                if (mShareActionProvider != null) {
+                    mShareActionProvider.setShareIntent(createShareShotIntent());
+                }
+            }
         } else if (loader.getId() == DETAILS_TRAILERS_LOADER) {
             this.trailersCard.setVisibility(View.VISIBLE);
             detailsMovieContainer.removeAllViews();
+
+            boolean isInited = false;
+
             do {
                 final String name = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_NAME));
                 final String key = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_KEY));
-                Log.d(LOG_TAG, "site = " + name + " key = " + key);
+                if (!isInited) {
+                    isInited = true;
+                    this.mShotShareStr = String.format(getString(R.string.share_trailer), "http://www.youtube.com/watch?v=" + key);
+                    if (mShareActionProvider != null) {
+                        mShareActionProvider.setShareIntent(createShareShotIntent());
+                    }
+                }
+
 
                 TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
                 textView.setText(name);
@@ -237,10 +289,9 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         } else if (loader.getId() == DETAILS_REVIEWS_LOADER) {
             this.reviewsCard.setVisibility(View.VISIBLE);
             detailsReviewContainer.removeAllViews();
+
             do {
                 final String content = data.getString(data.getColumnIndex(MoviesContract.ReviewEntry.COLUMN_CONTENT));
-//                final String key = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_KEY));
-//                Log.d(LOG_TAG, "site = " + name + " key = " + key);
 
                 TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
                 textView.setText(content);

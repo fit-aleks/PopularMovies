@@ -7,8 +7,7 @@
         android:id="@+id/poster_img"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"/>
+        android:adjustViewBounds="true"/>
 
     <TextView
         android:id="@+id/poster_title"

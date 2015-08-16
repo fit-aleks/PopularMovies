@@ -35,6 +35,9 @@ public class GetMovieDetailsService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        if (!NetworkHelper.isConnected(this)) {
+            return;
+        }
         long movieDbID = intent.getLongExtra(MOVIE_ID_QUERY_EXTRA, 0);
         boolean isMovie = intent.getBooleanExtra(IS_MOVIE_QUERY_EXTRA, true);
         if (movieDbID <= 0) {
