@@ -1,10 +1,10 @@
 package com.fitaleks.popularmovies;
 
-import android.app.IntentService;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -71,7 +71,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     };
 
     private ShareActionProvider mShareActionProvider;
-    private String mShotShareStr;
+    private String mMovieShareStr;
 
     @Bind(R.id.details_movie_poster) ImageView poster;
     @Bind(R.id.details_movie_title) TextView title;
@@ -165,17 +165,21 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         // Attach an intent to this ShareActionProvider.  You can update this at any time,
         // like when the user selects a new piece of data they might like to share.
         if (mShareActionProvider != null ) {
-            mShareActionProvider.setShareIntent(createShareShotIntent());
+            mShareActionProvider.setShareIntent(createShareMovieIntent());
         } else {
             Log.d(LOG_TAG, "Share Action Provider is null?");
         }
     }
 
-    private Intent createShareShotIntent() {
+    private Intent createShareMovieIntent() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        } else {
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        }
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, mShotShareStr);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mMovieShareStr);
         return shareIntent;
     }
 
@@ -238,9 +242,9 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             this.mIsMovie = data.getInt(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_IS_MOVIE)) == 1;
             updateMovieData();
             if (this.trailersCard.getVisibility() == View.GONE) {
-                this.mShotShareStr = String.format(getString(R.string.share_movie), title);
+                this.mMovieShareStr = String.format(getString(R.string.share_movie), title);
                 if (mShareActionProvider != null) {
-                    mShareActionProvider.setShareIntent(createShareShotIntent());
+                    mShareActionProvider.setShareIntent(createShareMovieIntent());
                 }
             }
         } else if (loader.getId() == DETAILS_TRAILERS_LOADER) {
@@ -254,9 +258,9 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                 final String key = data.getString(data.getColumnIndex(MoviesContract.TrailerEntry.COLUMN_KEY));
                 if (!isInited) {
                     isInited = true;
-                    this.mShotShareStr = String.format(getString(R.string.share_trailer), "http://www.youtube.com/watch?v=" + key);
+                    this.mMovieShareStr = String.format(getString(R.string.share_trailer), "http://www.youtube.com/watch?v=" + key);
                     if (mShareActionProvider != null) {
-                        mShareActionProvider.setShareIntent(createShareShotIntent());
+                        mShareActionProvider.setShareIntent(createShareMovieIntent());
                     }
                 }
 
