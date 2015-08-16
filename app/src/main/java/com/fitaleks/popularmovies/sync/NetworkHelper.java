@@ -29,7 +29,7 @@ import retrofit.converter.GsonConverter;
  * Created by alexanderkulikovskiy on 11.08.15.
  */
 public class NetworkHelper {
-    public static final String MOVIEDB_API_KEY     = "375f92998282f1a4bb47492812dc0123";
+    public static final String MOVIEDB_API_KEY = "copy_your_key_here";
 
     public static PopularMoviesNetworkService getMovieRESTAdapter() {
         final Gson gson = new GsonBuilder()
