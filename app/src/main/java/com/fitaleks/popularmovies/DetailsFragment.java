@@ -75,7 +75,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Bind(R.id.details_movie_poster) ImageView poster;
     @Bind(R.id.details_movie_title) TextView title;
-    @Bind(R.id.details_movie_year) TextView year;
+    @Bind(R.id.details_movie_year) TextView releaseDate;
     @Bind(R.id.details_movie_rating) TextView rating;
     @Bind(R.id.details_movie_overview) TextView overview;
     @Bind(R.id.details_trailers_container) LinearLayout detailsMovieContainer;
@@ -231,8 +231,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
             this.title.setText(title);
 
-            String year = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
-            this.year.setText(year);
+            String releaseDate = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
+            this.releaseDate.setText(releaseDate);
 
             double averageRating = data.getDouble(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
             this.rating.setText(String.format(getString(R.string.details_rating), averageRating));
