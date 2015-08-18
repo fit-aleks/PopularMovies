@@ -19,6 +19,9 @@ public class MainActivity extends AppCompatActivity implements MoviesListFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
+        setSupportActionBar(toolbar);
+
         if (findViewById(R.id.movie_details_container) != null) {
             this.mTwoPane = true;
             if (savedInstanceState == null) {

@@ -12,4 +12,6 @@
     <dimen name="details_fab_margin">16dp</dimen>
     <dimen name="card_corner_radius">4dp</dimen>
     <dimen name="card_content_vertical_padding">8dp</dimen>
+
+    <dimen name="toolbar_elevation">12dp</dimen>
 </resources>

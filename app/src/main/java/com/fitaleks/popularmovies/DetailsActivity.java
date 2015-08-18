@@ -2,6 +2,7 @@ package com.fitaleks.popularmovies;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
 /**
  * Created by alexanderkulikovskiy on 11.07.15.
@@ -14,6 +15,12 @@ public class DetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
         if (savedInstanceState == null) {
             long movieId = getIntent().getLongExtra(KEY_MOVIE_ID, 0);
             DetailsFragment detailFragment = DetailsFragment.newInstance(movieId);
