@@ -11,3 +11,14 @@ With the app, you can:
 * Save favorite movies locally to view them even when offline
 * Watch trailers
 * Read reviews
+
+## Screens
+
+![screen](../master/art/Screenshot_20160301-114956_framed.png)
+![screen](../master/art/Screenshot_20160301-115335_framed.png)
+
+## Libraries
+
+* [ButterKnife](https://github.com/JakeWharton/butterknife)
+* [Picasso](http://square.github.io/picasso/)
+* [Retrofit](https://github.com/square/retrofit)
