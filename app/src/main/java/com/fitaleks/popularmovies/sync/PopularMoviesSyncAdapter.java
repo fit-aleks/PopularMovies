@@ -9,51 +9,22 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncRequest;
 import android.content.SyncResult;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.fitaleks.popularmovies.R;
-import com.fitaleks.popularmovies.Utility;
 import com.fitaleks.popularmovies.data.Movie;
 import com.fitaleks.popularmovies.data.MoviesContract;
-import com.fitaleks.popularmovies.data.Review;
 import com.fitaleks.popularmovies.data.TVSeries;
-import com.fitaleks.popularmovies.data.Trailer;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
-import java.util.concurrent.Executors;
 
 import retrofit.Callback;
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
-import retrofit.android.MainThreadExecutor;
 import retrofit.client.Response;
-import retrofit.converter.GsonConverter;
 
 /**
  * Created by alexanderkulikovskiy on 10.07.15.
