@@ -26,9 +26,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.fitaleks.popularmovies.data.MoviesContract;
 import com.fitaleks.popularmovies.sync.GetMovieDetailsService;
-import com.squareup.picasso.Picasso;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -236,7 +236,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
         }
         if (loader.getId() == DETAILS_MOVIE_LOADER) {
             String imgUrl = "http://image.tmdb.org/t/p/w185" + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
-            Picasso.with(getActivity()).load(imgUrl).into(this.poster);
+            Glide.with(getActivity()).load(imgUrl).into(this.poster);
 
             String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
             this.title.setText(title);
@@ -274,22 +274,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                     }
                 }
 
-                final LayoutInflater inflater = LayoutInflater.from(getContext());
-                TextView textView = (TextView) inflater.inflate(R.layout.details_trailer_view, null);
-                textView.setText(name);
-                final ImageView imageView = new ImageView(getContext());
-                final LinearLayout.LayoutParams imageViewLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                imageView.setLayoutParams(imageViewLayoutParams);
-
-                final View lineView = new View(getContext());
-                lineView.setBackgroundColor(getResources().getColor(android.R.color.black));
-                final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
-                lineView.setLayoutParams(layoutParams);
-
-                detailsMovieContainer.addView(textView);
-                detailsMovieContainer.addView(imageView);
-                detailsMovieContainer.addView(lineView);
-                detailsMovieContainer.setOnClickListener(new View.OnClickListener() {
+                View.OnClickListener clickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         try {
@@ -301,9 +286,27 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                             startActivity(intent);
                         }
                     }
-                });
+                };
 
-                Picasso.with(getContext())
+                final LayoutInflater inflater = LayoutInflater.from(getContext());
+                TextView textView = (TextView) inflater.inflate(R.layout.details_trailer_view, null);
+                textView.setText(name);
+                textView.setOnClickListener(clickListener);
+                final ImageView imageView = new ImageView(getContext());
+                final LinearLayout.LayoutParams imageViewLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                imageView.setLayoutParams(imageViewLayoutParams);
+                imageView.setOnClickListener(clickListener);
+
+                final View lineView = new View(getContext());
+                lineView.setBackgroundColor(getResources().getColor(android.R.color.black));
+                final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                lineView.setLayoutParams(layoutParams);
+
+                detailsMovieContainer.addView(textView);
+                detailsMovieContainer.addView(imageView);
+                detailsMovieContainer.addView(lineView);
+
+                Glide.with(this)
                         .load("http://img.youtube.com/vi/" + key + "/0.jpg")
                         .into(imageView);
 

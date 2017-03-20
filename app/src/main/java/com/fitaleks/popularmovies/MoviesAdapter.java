@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -39,7 +39,7 @@ public class MoviesAdapter extends CursorAdapter {
         holder.title.setText(movieTitle);
 
         final String imageUrl = "http://image.tmdb.org/t/p/w185" + cursor.getString(MoviesListFragment.COL_IMAGE_PATH);
-        Picasso.with(context).load(imageUrl).into(holder.image);
+        Glide.with(context).load(imageUrl).into(holder.image);
     }
 
     public static class PosterItemViewHolder {
