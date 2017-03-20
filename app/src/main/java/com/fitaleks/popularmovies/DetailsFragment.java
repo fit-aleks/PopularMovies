@@ -13,6 +13,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
@@ -73,16 +74,26 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private ShareActionProvider mShareActionProvider;
     private String mMovieShareStr;
 
-    @Bind(R.id.details_movie_poster) ImageView poster;
-    @Bind(R.id.details_movie_title) TextView title;
-    @Bind(R.id.details_movie_year) TextView releaseDate;
-    @Bind(R.id.details_movie_rating) TextView rating;
-    @Bind(R.id.details_movie_overview) TextView overview;
-    @Bind(R.id.details_trailers_container) LinearLayout detailsMovieContainer;
-    @Bind(R.id.details_reviews_container) LinearLayout detailsReviewContainer;
-    @Bind(R.id.details_trailers_card) CardView trailersCard;
-    @Bind(R.id.details_reviews_card) CardView reviewsCard;
-    @Bind(R.id.details_fab_like) FloatingActionButton fabLike;
+    @Bind(R.id.details_movie_poster)
+    ImageView poster;
+    @Bind(R.id.details_movie_title)
+    TextView title;
+    @Bind(R.id.details_movie_year)
+    TextView releaseDate;
+    @Bind(R.id.details_movie_rating)
+    TextView rating;
+    @Bind(R.id.details_movie_overview)
+    TextView overview;
+    @Bind(R.id.details_trailers_container)
+    LinearLayout detailsMovieContainer;
+    @Bind(R.id.details_reviews_container)
+    LinearLayout detailsReviewContainer;
+    @Bind(R.id.details_trailers_card)
+    CardView trailersCard;
+    @Bind(R.id.details_reviews_card)
+    CardView reviewsCard;
+    @Bind(R.id.details_fab_like)
+    FloatingActionButton fabLike;
 
     public DetailsFragment() {
         setHasOptionsMenu(true);
@@ -164,7 +175,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
         // Attach an intent to this ShareActionProvider.  You can update this at any time,
         // like when the user selects a new piece of data they might like to share.
-        if (mShareActionProvider != null ) {
+        if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(createShareMovieIntent());
         } else {
             Log.d(LOG_TAG, "Share Action Provider is null?");
@@ -225,7 +236,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             return;
         }
         if (loader.getId() == DETAILS_MOVIE_LOADER) {
-            String imgUrl = "http://image.tmdb.org/t/p/w185"  + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
+            String imgUrl = "http://image.tmdb.org/t/p/w185" + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
             Picasso.with(getActivity()).load(imgUrl).into(this.poster);
 
             String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
@@ -264,10 +275,22 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                     }
                 }
 
-
-                TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
+                final LayoutInflater inflater = LayoutInflater.from(getContext());
+                TextView textView = (TextView) inflater.inflate(R.layout.details_trailer_view, null);
                 textView.setText(name);
-                textView.setOnClickListener(new View.OnClickListener() {
+                final ImageView imageView = new ImageView(getContext());
+                final LinearLayout.LayoutParams imageViewLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                imageView.setLayoutParams(imageViewLayoutParams);
+
+                final View lineView = new View(getContext());
+                lineView.setBackgroundColor(getResources().getColor(android.R.color.black));
+                final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                lineView.setLayoutParams(layoutParams);
+
+                detailsMovieContainer.addView(textView);
+                detailsMovieContainer.addView(imageView);
+                detailsMovieContainer.addView(lineView);
+                detailsMovieContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         try {
@@ -280,13 +303,10 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                         }
                     }
                 });
-                View lineView = new View(getActivity());
-                lineView.setBackgroundColor(getResources().getColor(android.R.color.black));
-                final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
-                lineView.setLayoutParams(layoutParams);
 
-                detailsMovieContainer.addView(textView);
-                detailsMovieContainer.addView(lineView);
+                Picasso.with(getContext())
+                        .load("http://img.youtube.com/vi/" + key + "/0.jpg")
+                        .into(imageView);
 
             } while (data.moveToNext());
         } else if (loader.getId() == DETAILS_REVIEWS_LOADER) {
@@ -296,7 +316,8 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             do {
                 final String content = data.getString(data.getColumnIndex(MoviesContract.ReviewEntry.COLUMN_CONTENT));
 
-                TextView textView = (TextView) getLayoutInflater(null).inflate(R.layout.details_trailer_view, null);
+                final LayoutInflater inflater = LayoutInflater.from(getContext());
+                final TextView textView = (TextView) inflater.inflate(R.layout.details_trailer_view, null);
                 textView.setText(content);
                 textView.setClickable(false);
 
