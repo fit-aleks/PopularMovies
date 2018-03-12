@@ -68,7 +68,7 @@ public class MoviesListFragment extends Fragment implements LoaderManager.Loader
             this.listType = FragmentListTypes.values()[ bundle.getInt("", 0) ];
         }
         final View rootView = inflater.inflate(R.layout.fragment_grid_movies, container, false);
-        final GridView gridLayout = (GridView) rootView.findViewById(R.id.gridview);
+        final GridView gridLayout = rootView.findViewById(R.id.gridview);
         moviesAdapter = new MoviesAdapter(getActivity(), null, 0);
         gridLayout.setAdapter(moviesAdapter);
         gridLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {

@@ -1,43 +1,46 @@
 package com.fitaleks.popularmovies;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.app.FragmentManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by alexanderkulikovskiy on 07.07.15.
  */
 public class MoviesFragment extends Fragment {
 
-    @Bind(R.id.friendPager)
+    @BindView(R.id.friendPager)
     ViewPager viewPager;
-    @Bind(R.id.friendSlideTab)
+    @BindView(R.id.friendSlideTab)
     TabLayout tabLayout;
+    private Unbinder unbinder;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_all_movies, container, false);
-        ButterKnife.bind(this, rootView);
+        unbinder = ButterKnife.bind(this, rootView);
 
         return rootView;
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         Adapter adapter = new Adapter(getChildFragmentManager());
@@ -49,6 +52,11 @@ public class MoviesFragment extends Fragment {
         tabLayout.setupWithViewPager(viewPager);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
+    }
 
     private static class Adapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragments = new ArrayList<>();

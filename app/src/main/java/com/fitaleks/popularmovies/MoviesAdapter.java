@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -43,8 +43,8 @@ public class MoviesAdapter extends CursorAdapter {
     }
 
     public static class PosterItemViewHolder {
-        @Bind(R.id.poster_img) ImageView image;
-        @Bind(R.id.poster_title) TextView title;
+        @BindView(R.id.poster_img) ImageView image;
+        @BindView(R.id.poster_title) TextView title;
 
         public PosterItemViewHolder(View v) {
             ButterKnife.bind(this, v);

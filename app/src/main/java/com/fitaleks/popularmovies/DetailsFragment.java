@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
@@ -30,8 +32,9 @@ import com.bumptech.glide.Glide;
 import com.fitaleks.popularmovies.data.MoviesContract;
 import com.fitaleks.popularmovies.sync.GetMovieDetailsService;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Created by alexanderkulikovskiy on 11.07.15.
@@ -73,26 +76,25 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     private ShareActionProvider mShareActionProvider;
     private String mMovieShareStr;
 
-    @Bind(R.id.details_movie_poster)
+    @BindView(R.id.details_movie_poster)
     ImageView poster;
-    @Bind(R.id.details_movie_title)
-    TextView title;
-    @Bind(R.id.details_movie_year)
+    @BindView(R.id.details_movie_year)
     TextView releaseDate;
-    @Bind(R.id.details_movie_rating)
+    @BindView(R.id.details_movie_rating)
     TextView rating;
-    @Bind(R.id.details_movie_overview)
+    @BindView(R.id.details_movie_overview)
     TextView overview;
-    @Bind(R.id.details_trailers_container)
+    @BindView(R.id.details_trailers_container)
     LinearLayout detailsMovieContainer;
-    @Bind(R.id.details_reviews_container)
+    @BindView(R.id.details_reviews_container)
     LinearLayout detailsReviewContainer;
-    @Bind(R.id.details_trailers_card)
+    @BindView(R.id.details_trailers_card)
     CardView trailersCard;
-    @Bind(R.id.details_reviews_card)
+    @BindView(R.id.details_reviews_card)
     CardView reviewsCard;
-    @Bind(R.id.details_fab_like)
+    @BindView(R.id.details_fab_like)
     FloatingActionButton fabLike;
+    private Unbinder unbinder;
 
     public DetailsFragment() {
         setHasOptionsMenu(true);
@@ -100,7 +102,6 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
     public static DetailsFragment newInstance(long movieId) {
         DetailsFragment detailFragment = new DetailsFragment();
-
         Bundle bundle = new Bundle();
         bundle.putLong(DetailsActivity.KEY_MOVIE_ID, movieId);
         detailFragment.setArguments(bundle);
@@ -110,14 +111,13 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Bundle arguments = getArguments();
         if (arguments != null) {
             mMovieId = arguments.getLong(DetailsActivity.KEY_MOVIE_ID);
         }
-
         final View rootView = inflater.inflate(R.layout.fragment_details, container, false);
-        ButterKnife.bind(this, rootView);
+        unbinder = ButterKnife.bind(this, rootView);
 
         this.fabLike.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,7 +133,7 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
     }
 
     private void updateMovieData() {
@@ -225,7 +225,6 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(LOG_TAG, "onLoadFinished");
         if (data == null || !data.moveToFirst()) {
             if (loader.getId() == DETAILS_TRAILERS_LOADER) {
                 this.trailersCard.setVisibility(View.GONE);
@@ -235,19 +234,19 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             return;
         }
         if (loader.getId() == DETAILS_MOVIE_LOADER) {
-            String imgUrl = "http://image.tmdb.org/t/p/w185" + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
+            final String imgUrl = "http://image.tmdb.org/t/p/w185" + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
             Glide.with(getActivity()).load(imgUrl).into(this.poster);
 
-            String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
-            this.title.setText(title);
+            final String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
+            ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
 
-            String releaseDate = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
+            final String releaseDate = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE));
             this.releaseDate.setText(releaseDate);
 
-            double averageRating = data.getDouble(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
+            final double averageRating = data.getDouble(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE));
             this.rating.setText(String.format(getString(R.string.details_rating), averageRating));
 
-            String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
+            final String overview = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_OVERVIEW));
             this.overview.setText(overview);
             this.mIsMovie = data.getInt(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_IS_MOVIE)) == 1;
             updateMovieData();
