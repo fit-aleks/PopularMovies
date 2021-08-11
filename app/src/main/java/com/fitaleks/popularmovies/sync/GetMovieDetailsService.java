@@ -1,13 +1,11 @@
 package com.fitaleks.popularmovies.sync;
 
 import android.app.IntentService;
-import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.fitaleks.popularmovies.data.MoviesContract;
 import com.fitaleks.popularmovies.data.Review;

@@ -2,7 +2,7 @@ package com.fitaleks.popularmovies;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
+import androidx.cursoradapter.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,16 +38,17 @@ public class MoviesAdapter extends CursorAdapter {
         final String movieTitle = cursor.getString(MoviesListFragment.COL_TITLE);
         holder.title.setText(movieTitle);
 
-        final String imageUrl = "http://image.tmdb.org/t/p/w185" + cursor.getString(MoviesListFragment.COL_IMAGE_PATH);
+        final String imageUrl = "https://image.tmdb.org/t/p/w185" + cursor.getString(MoviesListFragment.COL_IMAGE_PATH);
         Glide.with(context).load(imageUrl).into(holder.image);
     }
 
     public static class PosterItemViewHolder {
-        @BindView(R.id.poster_img) ImageView image;
-        @BindView(R.id.poster_title) TextView title;
+        ImageView image;
+        TextView title;
 
         public PosterItemViewHolder(View v) {
-            ButterKnife.bind(this, v);
+            image = v.findViewById(R.id.poster_img);
+            title = v.findViewById(R.id.poster_title);
         }
     }
 }

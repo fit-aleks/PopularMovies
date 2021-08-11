@@ -1,22 +1,23 @@
 package com.fitaleks.popularmovies;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.ShareActionProvider;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.appcompat.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -234,8 +235,11 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
             return;
         }
         if (loader.getId() == DETAILS_MOVIE_LOADER) {
-            final String imgUrl = "http://image.tmdb.org/t/p/w185" + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
-            Glide.with(getActivity()).load(imgUrl).into(this.poster);
+            final String imgUrl = "https://image.tmdb.org/t/p/w185" + data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_POSTER_PATH));
+            final Context context = getContext();
+            if (context != null) {
+                Glide.with(context).load(imgUrl).into(this.poster);
+            }
 
             final String title = data.getString(data.getColumnIndex(MoviesContract.MovieEntry.COLUMN_TITLE));
             ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);

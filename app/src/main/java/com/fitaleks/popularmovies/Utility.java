@@ -3,7 +3,7 @@ package com.fitaleks.popularmovies;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * Created by alexanderkulikovskiy on 11.07.15.
